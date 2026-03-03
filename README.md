@@ -2,16 +2,7 @@
 
 Reference implementation of [OSSF Scorecard](https://github.com/ossf/scorecard) in TypeScript.
 
-Computes all 20 OSSF Scorecard checks via the GitHub API directly — no dependency on the OSSF public API (which only covers ~1M repos).
-
-## Features
-
-- **Zero runtime dependencies** — uses `fetch` directly
-- **Browser + Node.js** — works in Chrome extensions and server-side
-- **All 20 checks** — complete OSSF Scorecard coverage
-- **Drop-in replacement** — same output shape as OSSF Scorecard
-- **Exact OSSF scoring** — weights from Go source, identical aggregate formula
-- **Injectable fetch** — easy testing and proxying
+Computes all 20 OSSF Scorecard checks via the GitHub API directly, without depending on the OSSF public API (which only covers ~1M repos).
 
 ## Install
 
