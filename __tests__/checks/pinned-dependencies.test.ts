@@ -14,8 +14,7 @@ describe("pinnedDependencies", () => {
 				workflowFiles: [
 					{
 						path: ".github/workflows/ci.yml",
-						content:
-							"uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29",
+						content: "uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29",
 					},
 				],
 			}),

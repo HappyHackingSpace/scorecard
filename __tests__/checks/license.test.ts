@@ -4,9 +4,7 @@ import { makeRepoData } from "../helpers";
 
 describe("license", () => {
 	it("returns 0 when no license", () => {
-		const result = license(
-			makeRepoData({ licenseKey: null, licenseName: null, spdxId: null }),
-		);
+		const result = license(makeRepoData({ licenseKey: null, licenseName: null, spdxId: null }));
 		expect(result.score).toBe(0);
 	});
 

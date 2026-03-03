@@ -11,9 +11,7 @@ describe("fuzzing", () => {
 	it("returns 10 when fuzzing found in workflows", () => {
 		const result = fuzzing(
 			makeRepoData({
-				workflowFiles: [
-					{ path: ".github/workflows/fuzz.yml", content: "uses: google/oss-fuzz" },
-				],
+				workflowFiles: [{ path: ".github/workflows/fuzz.yml", content: "uses: google/oss-fuzz" }],
 			}),
 		);
 		expect(result.score).toBe(10);

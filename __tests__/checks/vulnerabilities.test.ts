@@ -4,9 +4,7 @@ import { makeRepoData } from "../helpers";
 
 describe("vulnerabilities", () => {
 	it("returns -1 when alerts not enabled", () => {
-		const result = vulnerabilities(
-			makeRepoData({ hasVulnerabilityAlertsEnabled: false }),
-		);
+		const result = vulnerabilities(makeRepoData({ hasVulnerabilityAlertsEnabled: false }));
 		expect(result.score).toBe(-1);
 	});
 

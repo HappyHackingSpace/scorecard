@@ -74,7 +74,12 @@ describe("computeScorecard", () => {
 					hasIssuesEnabled: true,
 					name: "test-repo",
 					owner: { login: "test-owner" },
-					licenseInfo: { key: "mit", name: "MIT License", url: "https://mit.license", spdxId: "MIT" },
+					licenseInfo: {
+						key: "mit",
+						name: "MIT License",
+						url: "https://mit.license",
+						spdxId: "MIT",
+					},
 					isSecurityPolicyEnabled: false,
 					hasVulnerabilityAlertsEnabled: true,
 					defaultBranchRef: {
@@ -131,7 +136,12 @@ describe("computeScorecard", () => {
 					hasIssuesEnabled: true,
 					name: "test-repo",
 					owner: { login: "test-owner" },
-					licenseInfo: { key: "mit", name: "MIT License", url: "https://mit.license", spdxId: "MIT" },
+					licenseInfo: {
+						key: "mit",
+						name: "MIT License",
+						url: "https://mit.license",
+						spdxId: "MIT",
+					},
 					isSecurityPolicyEnabled: false,
 					hasVulnerabilityAlertsEnabled: true,
 					defaultBranchRef: {
@@ -152,7 +162,13 @@ describe("computeScorecard", () => {
 				return { ok: true, status: 200, json: async () => graphqlResponse } as Response;
 			}
 
-			return { ok: false, status: 404, statusText: "Not Found", json: async () => ({}), text: async () => "" } as Response;
+			return {
+				ok: false,
+				status: 404,
+				statusText: "Not Found",
+				json: async () => ({}),
+				text: async () => "",
+			} as Response;
 		}) as typeof globalThis.fetch;
 
 		const result = await computeScorecard("test-owner", "test-repo", {

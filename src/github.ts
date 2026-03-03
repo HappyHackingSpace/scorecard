@@ -40,10 +40,7 @@ export const graphql = async <T>(
 	return json.data;
 };
 
-export const restGet = async <T>(
-	options: GitHubClientOptions,
-	path: string,
-): Promise<T | null> => {
+export const restGet = async <T>(options: GitHubClientOptions, path: string): Promise<T | null> => {
 	const url = path.startsWith("http") ? path : `${GITHUB_API}${path}`;
 	const response = await options.fetch(url, { headers: buildHeaders(options.token) });
 

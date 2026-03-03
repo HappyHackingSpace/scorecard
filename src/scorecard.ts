@@ -1,12 +1,3 @@
-import { graphql, restGet, restGetRaw, type GitHubClientOptions } from "./github";
-import { REPO_QUERY } from "./queries";
-import type {
-	CheckDefinition,
-	RepoData,
-	ScorecardCheck,
-	ScorecardOptions,
-	ScorecardResult,
-} from "./types";
 import { binaryArtifacts } from "./checks/binary-artifacts";
 import { branchProtection } from "./checks/branch-protection";
 import { ciTests } from "./checks/ci-tests";
@@ -27,6 +18,15 @@ import { signedReleases } from "./checks/signed-releases";
 import { tokenPermissions } from "./checks/token-permissions";
 import { vulnerabilities } from "./checks/vulnerabilities";
 import { webhooks } from "./checks/webhooks";
+import { type GitHubClientOptions, graphql, restGet, restGetRaw } from "./github";
+import { REPO_QUERY } from "./queries";
+import type {
+	CheckDefinition,
+	RepoData,
+	ScorecardCheck,
+	ScorecardOptions,
+	ScorecardResult,
+} from "./types";
 
 const RISK_WEIGHTS = { Critical: 10, High: 7.5, Medium: 5, Low: 2.5 } as const;
 
@@ -117,21 +117,24 @@ const fetchWorkflowFiles = async (
 	if (!listing) return [];
 
 	const workflowPaths = listing.tree
-		.filter((f) => f.type === "blob" && f.path.startsWith(".github/workflows/") && f.path.endsWith(".yml"))
+		.filter(
+			(f) =>
+				f.type === "blob" && f.path.startsWith(".github/workflows/") && f.path.endsWith(".yml"),
+		)
 		.map((f) => f.path);
 
 	const files = await Promise.allSettled(
 		workflowPaths.map(async (path) => {
-			const content = await restGetRaw(
-				client,
-				`/repos/${owner}/${repo}/contents/${path}`,
-			);
+			const content = await restGetRaw(client, `/repos/${owner}/${repo}/contents/${path}`);
 			return content ? { path, content } : null;
 		}),
 	);
 
 	return files
-		.filter((r): r is PromiseFulfilledResult<{ path: string; content: string } | null> => r.status === "fulfilled")
+		.filter(
+			(r): r is PromiseFulfilledResult<{ path: string; content: string } | null> =>
+				r.status === "fulfilled",
+		)
 		.map((r) => r.value)
 		.filter((v): v is { path: string; content: string } => v !== null);
 };
@@ -147,39 +150,46 @@ const assembleRepoData = async (
 	const defaultRef = r.defaultBranchRef;
 	const commitNodes = defaultRef?.target?.history?.nodes ?? [];
 
-	const [workflowFiles, dependabotContent, renovateContent, treeData, vulnAlerts, ciiData, webhookData, securityPolicyContent] =
-		await Promise.allSettled([
-			fetchWorkflowFiles(client, owner, repo),
-			restGetRaw(client, `/repos/${owner}/${repo}/contents/.github/dependabot.yml`),
-			restGetRaw(client, `/repos/${owner}/${repo}/contents/renovate.json`),
-			restGet<{ tree: { path: string; type: string }[] }>(
-				client,
-				`/repos/${owner}/${repo}/git/trees/HEAD?recursive=1`,
-			),
-			restGet<{ severity: string; state: string }[]>(
-				client,
-				`/repos/${owner}/${repo}/dependabot/alerts?state=open&per_page=100`,
-			),
-			restGet<{ badge_level?: string }[]>(
-				client,
-				`https://www.bestpractices.dev/projects.json?url=https://github.com/${owner}/${repo}`,
-			),
-			restGet<{ id: number; config: { secret?: string }; active: boolean }[]>(
-				client,
-				`/repos/${owner}/${repo}/hooks`,
-			),
-			r.isSecurityPolicyEnabled
-				? restGetRaw(client, `/repos/${owner}/${repo}/contents/SECURITY.md`)
-				: Promise.resolve(null),
-		]);
+	const [
+		workflowFiles,
+		dependabotContent,
+		renovateContent,
+		treeData,
+		vulnAlerts,
+		ciiData,
+		webhookData,
+		securityPolicyContent,
+	] = await Promise.allSettled([
+		fetchWorkflowFiles(client, owner, repo),
+		restGetRaw(client, `/repos/${owner}/${repo}/contents/.github/dependabot.yml`),
+		restGetRaw(client, `/repos/${owner}/${repo}/contents/renovate.json`),
+		restGet<{ tree: { path: string; type: string }[] }>(
+			client,
+			`/repos/${owner}/${repo}/git/trees/HEAD?recursive=1`,
+		),
+		restGet<{ severity: string; state: string }[]>(
+			client,
+			`/repos/${owner}/${repo}/dependabot/alerts?state=open&per_page=100`,
+		),
+		restGet<{ badge_level?: string }[]>(
+			client,
+			`https://www.bestpractices.dev/projects.json?url=https://github.com/${owner}/${repo}`,
+		),
+		restGet<{ id: number; config: { secret?: string }; active: boolean }[]>(
+			client,
+			`/repos/${owner}/${repo}/hooks`,
+		),
+		r.isSecurityPolicyEnabled
+			? restGetRaw(client, `/repos/${owner}/${repo}/contents/SECURITY.md`)
+			: Promise.resolve(null),
+	]);
 
 	const settled = <T>(result: PromiseSettledResult<T>, fallback: T): T =>
 		result.status === "fulfilled" ? result.value : fallback;
 
 	const ciiResult = settled(ciiData, null);
-	const ciiBadgeLevel = Array.isArray(ciiResult) && ciiResult.length > 0
-		? (ciiResult[0].badge_level ?? null)
-		: null;
+	const ciiBadgeLevel =
+		Array.isArray(ciiResult) && ciiResult.length > 0 ? (ciiResult[0].badge_level ?? null) : null;
 
 	const treeResult = settled(treeData, null);
 

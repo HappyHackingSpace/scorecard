@@ -20,11 +20,7 @@ const opts = (fetchFn: typeof globalThis.fetch) => ({
 describe("graphql", () => {
 	it("returns data on success", async () => {
 		const fetch = mockFetch(200, { data: { repository: { name: "test" } } });
-		const result = await graphql<{ repository: { name: string } }>(
-			opts(fetch),
-			"query {}",
-			{},
-		);
+		const result = await graphql<{ repository: { name: string } }>(opts(fetch), "query {}", {});
 		expect(result.repository.name).toBe("test");
 	});
 

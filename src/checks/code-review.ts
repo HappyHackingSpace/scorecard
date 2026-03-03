@@ -10,8 +10,7 @@ export const codeReview = (data: RepoData): CheckResult => {
 
 	for (const commit of data.recentCommits) {
 		const pr = commit.associatedPullRequest;
-		const isBot =
-			commit.author.login?.includes("[bot]") || commit.author.login?.includes("bot");
+		const isBot = commit.author.login?.includes("[bot]") || commit.author.login?.includes("bot");
 
 		if (!pr || !pr.merged) {
 			if (isBot) {
@@ -35,9 +34,7 @@ export const codeReview = (data: RepoData): CheckResult => {
 	return {
 		score,
 		reason:
-			score >= 7
-				? "Most changes are reviewed"
-				: `${details.length} unreviewed change(s) found`,
+			score >= 7 ? "Most changes are reviewed" : `${details.length} unreviewed change(s) found`,
 		details: details.slice(0, 10),
 	};
 };

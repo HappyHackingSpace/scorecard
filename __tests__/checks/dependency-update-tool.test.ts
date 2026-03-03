@@ -14,9 +14,7 @@ describe("dependencyUpdateTool", () => {
 	});
 
 	it("returns 10 when both are configured", () => {
-		const result = dependencyUpdateTool(
-			makeRepoData({ hasDependabot: true, hasRenovate: true }),
-		);
+		const result = dependencyUpdateTool(makeRepoData({ hasDependabot: true, hasRenovate: true }));
 		expect(result.score).toBe(10);
 		expect(result.reason).toContain("Dependabot");
 		expect(result.reason).toContain("Renovate");
