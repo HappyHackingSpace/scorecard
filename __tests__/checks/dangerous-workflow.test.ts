@@ -23,15 +23,18 @@ describe("dangerousWorkflow", () => {
 	});
 
 	it("returns 0 for script injection", () => {
+		const injectionContent = [
+			"on: issues",
+			"jobs:",
+			"  greet:",
+			"    runs-on: ubuntu-latest",
+			"    steps:",
+			// biome-ignore lint/suspicious/noTemplateCurlyInString: GitHub Actions expression syntax
+			'      - run: echo "${{ github.event.issue.title }}"',
+		].join("\n");
 		const result = dangerousWorkflow(
 			makeRepoData({
-				workflowFiles: [
-					{
-						path: ".github/workflows/greet.yml",
-						content:
-							'on: issues\njobs:\n  greet:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo "${{ github.event.issue.title }}"',
-					},
-				],
+				workflowFiles: [{ path: ".github/workflows/greet.yml", content: injectionContent }],
 			}),
 		);
 		expect(result.score).toBe(0);

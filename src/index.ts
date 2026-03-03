@@ -1,8 +1,8 @@
 export { computeScorecard } from "./scorecard";
 export type {
-	ScorecardResult,
+	CheckResult,
+	RiskLevel,
 	ScorecardCheck,
 	ScorecardOptions,
-	RiskLevel,
-	CheckResult,
+	ScorecardResult,
 } from "./types";

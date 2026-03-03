@@ -13,7 +13,9 @@
 			"require": "./dist/index.cjs"
 		}
 	},
-	"files": ["dist"],
+	"files": [
+		"dist"
+	],
 	"scripts": {
 		"build": "tsup",
 		"dev": "tsup --watch",
@@ -26,10 +28,10 @@
 		"clean": "rm -rf dist"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^1.9.4",
+		"@biomejs/biome": "^2.4.5",
 		"tsup": "^8.3.5",
 		"typescript": "^5.7.2",
-		"vitest": "^3.0.5"
+		"vitest": "^4.0.18"
 	},
 	"packageManager": "bun@1.3.6",
 	"license": "MIT",
@@ -37,5 +39,11 @@
 		"type": "git",
 		"url": "https://github.com/HappyHackingSpace/scorecard"
 	},
-	"keywords": ["ossf", "scorecard", "security", "github", "supply-chain"]
+	"keywords": [
+		"ossf",
+		"scorecard",
+		"security",
+		"github",
+		"supply-chain"
+	]
 }

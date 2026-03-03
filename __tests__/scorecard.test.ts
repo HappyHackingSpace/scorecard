@@ -93,7 +93,7 @@ describe("computeScorecard", () => {
 			},
 		};
 
-		const mockFetch = (async (url: string | URL | Request, init?: RequestInit) => {
+		const mockFetch = (async (url: string | URL | Request) => {
 			const urlStr = typeof url === "string" ? url : url instanceof URL ? url.toString() : url.url;
 
 			if (urlStr.includes("/graphql")) {

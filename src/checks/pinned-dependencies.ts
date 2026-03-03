@@ -3,7 +3,7 @@ import type { CheckResult, RepoData } from "../types";
 const SHA_PATTERN = /uses:\s*[\w\-./]+@([a-f0-9]{40})/g;
 const TAG_PATTERN = /uses:\s*[\w\-./]+@(v?\d[\w.]*)/g;
 const DOCKER_SHA_PATTERN = /FROM\s+\S+@sha256:[a-f0-9]{64}/g;
-const DOCKER_TAG_PATTERN = /FROM\s+\S+:[\w.\-]+/g;
+const DOCKER_TAG_PATTERN = /FROM\s+\S+:[\w.-]+/g;
 
 export const pinnedDependencies = (data: RepoData): CheckResult => {
 	let totalDeps = 0;

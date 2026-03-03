@@ -21,10 +21,13 @@ export const dangerousWorkflow = (data: RepoData): CheckResult => {
 	for (const wf of data.workflowFiles) {
 		for (const trigger of DANGEROUS_TRIGGERS) {
 			if (wf.content.includes(trigger)) {
+				// biome-ignore lint/suspicious/noTemplateCurlyInString: matching GitHub Actions expression syntax
+				const prHeadSha = "ref: ${{ github.event.pull_request.head.sha }}";
+				// biome-ignore lint/suspicious/noTemplateCurlyInString: matching GitHub Actions expression syntax
+				const headRef = "ref: ${{ github.head_ref }}";
 				const hasCheckout =
 					wf.content.includes("actions/checkout") &&
-					(wf.content.includes("ref: ${{ github.event.pull_request.head.sha }}") ||
-						wf.content.includes("ref: ${{ github.head_ref }}"));
+					(wf.content.includes(prHeadSha) || wf.content.includes(headRef));
 
 				if (hasCheckout) {
 					details.push(`${wf.path}: ${trigger} with explicit checkout`);
