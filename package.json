@@ -1,6 +1,6 @@
 {
 	"name": "@happyhackingspace/scorecard",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Reference implementation of OSSF Scorecard in TypeScript",
 	"type": "module",
 	"main": "./dist/index.cjs",
