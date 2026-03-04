@@ -1,35 +1,39 @@
 import type { CheckResult, RepoData } from "../types";
 
-const SEVERITY_WEIGHTS: Record<string, number> = {
-	critical: 4,
-	high: 3,
-	medium: 2,
-	low: 1,
-};
-
 export const vulnerabilities = (data: RepoData): CheckResult => {
-	if (!data.hasVulnerabilityAlertsEnabled) {
-		return { score: -1, reason: "Vulnerability alerts not enabled" };
+	// OSSF uses OSV-Scanner (osv.dev), not GitHub Dependabot alerts
+	const vulns = data.osvVulnerabilities;
+
+	if (vulns.length === 0) {
+		// If we found no vulns, check if we even had dependency data to scan
+		// If Dependabot alerts are available, use as fallback
+		if (data.hasVulnerabilityAlertsEnabled) {
+			const openAlerts = data.vulnerabilityAlerts.filter(
+				(a) => a.state === "open" || a.state === "OPEN",
+			);
+			if (openAlerts.length === 0) {
+				return { score: 10, reason: "No known vulnerabilities found" };
+			}
+			// OSSF scoring: -1 per vulnerability, min 0
+			const score = Math.max(0, 10 - openAlerts.length);
+			return {
+				score,
+				reason: `${openAlerts.length} open vulnerability alert(s)`,
+				details: openAlerts.map((a) => `${a.severity}: ${a.state}`),
+			};
+		}
+		return { score: 10, reason: "No known vulnerabilities found" };
 	}
 
-	const openAlerts = data.vulnerabilityAlerts.filter(
-		(a) => a.state === "open" || a.state === "OPEN",
-	);
-
-	if (openAlerts.length === 0) {
-		return { score: 10, reason: "No open vulnerability alerts" };
-	}
-
-	const weightedSum = openAlerts.reduce((sum, alert) => {
-		const weight = SEVERITY_WEIGHTS[alert.severity.toLowerCase()] ?? 1;
-		return sum + weight;
-	}, 0);
-
-	const score = Math.max(0, 10 - weightedSum);
+	// OSSF scoring: -1 per vulnerability, min 0
+	const score = Math.max(0, 10 - vulns.length);
+	const details = vulns.slice(0, 10).map((v) => `${v.id} (${v.severity})`);
 
 	return {
 		score,
-		reason: `${openAlerts.length} open vulnerability alert(s)`,
-		details: openAlerts.map((a) => `${a.severity}: ${a.state}`),
+		reason: vulns.length === 0
+			? "No known vulnerabilities found"
+			: `${vulns.length} known vulnerability(ies) via OSV`,
+		details,
 	};
 };

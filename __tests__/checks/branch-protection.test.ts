@@ -3,9 +3,9 @@ import { branchProtection } from "../../src/checks/branch-protection";
 import { makeRepoData } from "../helpers";
 
 describe("branchProtection", () => {
-	it("returns 0 when no rules", () => {
+	it("returns -1 when no rules (inconclusive)", () => {
 		const result = branchProtection(makeRepoData());
-		expect(result.score).toBe(0);
+		expect(result.score).toBe(-1);
 	});
 
 	it("returns 3 for basic protection", () => {

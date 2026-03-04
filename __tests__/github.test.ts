@@ -36,7 +36,7 @@ describe("graphql", () => {
 
 	it("throws on missing data", async () => {
 		const fetch = mockFetch(200, {});
-		await expect(graphql(opts(fetch), "query {}", {})).rejects.toThrow("missing data");
+		await expect(graphql(opts(fetch), "query {}", {})).rejects.toThrow("GraphQL request failed");
 	});
 });
 

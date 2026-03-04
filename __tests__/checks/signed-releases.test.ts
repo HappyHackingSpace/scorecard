@@ -8,6 +8,26 @@ describe("signedReleases", () => {
 		expect(result.score).toBe(-1);
 	});
 
+	it("returns -1 when all releases have zero assets", () => {
+		const result = signedReleases(
+			makeRepoData({
+				releases: [
+					{
+						tagName: "v1.0",
+						createdAt: new Date().toISOString(),
+						assets: [],
+					},
+					{
+						tagName: "v0.9",
+						createdAt: new Date().toISOString(),
+						assets: [],
+					},
+				],
+			}),
+		);
+		expect(result.score).toBe(-1);
+	});
+
 	it("returns 10 for SLSA provenance", () => {
 		const result = signedReleases(
 			makeRepoData({

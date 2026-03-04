@@ -22,13 +22,27 @@ describe("tokenPermissions", () => {
 		expect(result.score).toBe(10);
 	});
 
-	it("deducts for no permissions block", () => {
+	it("returns 0 when no permissions block at any level (OSSF behavior)", () => {
 		const result = tokenPermissions(
 			makeRepoData({
 				workflowFiles: [
 					{
 						path: ".github/workflows/ci.yml",
-						content: "name: CI\njobs:\n  test:",
+						content: "name: CI\njobs:\n  test:\n    runs-on: ubuntu-latest",
+					},
+				],
+			}),
+		);
+		expect(result.score).toBe(0);
+	});
+
+	it("returns 5 when job-level permissions exist but no top-level", () => {
+		const result = tokenPermissions(
+			makeRepoData({
+				workflowFiles: [
+					{
+						path: ".github/workflows/ci.yml",
+						content: "name: CI\njobs:\n  test:\n    permissions:\n      contents: read",
 					},
 				],
 			}),

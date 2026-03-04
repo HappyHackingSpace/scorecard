@@ -1,27 +1,44 @@
 import type { CheckResult, RepoData } from "../types";
 
-const MIN_COMMITS_PER_ORG = 5;
+const MIN_CONTRIBUTIONS = 5;
 const TARGET_ORGS = 3;
 
-export const contributors = (data: RepoData): CheckResult => {
-	const orgCommitCounts = new Map<string, number>();
+const normalizeCompany = (company: string): string =>
+	company
+		.toLowerCase()
+		.replace(/^@/, "")
+		.replace(/,.*$/, "")
+		.replace(/\s+(inc\.?|llc|ltd\.?|corp\.?|gmbh|co\.?)$/i, "")
+		.trim();
 
-	for (const commit of data.recentCommits) {
-		const org = commit.author.organization;
-		if (org) {
-			orgCommitCounts.set(org, (orgCommitCounts.get(org) ?? 0) + 1);
+export const contributors = (data: RepoData): CheckResult => {
+	// OSSF uses REST API contributor data with all orgs + company field
+	const affiliations = new Set<string>();
+	const details: string[] = [];
+
+	for (const contributor of data.contributors) {
+		if (contributor.contributions < MIN_CONTRIBUTIONS) continue;
+
+		for (const org of contributor.organizations) {
+			affiliations.add(org.toLowerCase());
+		}
+		if (contributor.company) {
+			const normalized = normalizeCompany(contributor.company);
+			if (normalized) {
+				affiliations.add(normalized);
+			}
 		}
 	}
 
-	const qualifyingOrgs = [...orgCommitCounts.entries()].filter(
-		([, count]) => count >= MIN_COMMITS_PER_ORG,
-	);
+	for (const aff of affiliations) {
+		details.push(`Organization/company: ${aff}`);
+	}
 
-	const score = Math.min(10, Math.round((qualifyingOrgs.length / TARGET_ORGS) * 10));
+	const score = Math.min(10, Math.floor((affiliations.size / TARGET_ORGS) * 10));
 
 	return {
 		score,
-		reason: `${qualifyingOrgs.length} organization(s) with ${MIN_COMMITS_PER_ORG}+ commits`,
-		details: qualifyingOrgs.map(([org, count]) => `${org}: ${count} commits`),
+		reason: `${affiliations.size} organization(s)/companies contributing`,
+		details: details.slice(0, 10),
 	};
 };

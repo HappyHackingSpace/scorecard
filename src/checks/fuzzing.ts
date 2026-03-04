@@ -1,33 +1,35 @@
 import type { CheckResult, RepoData } from "../types";
 
-const FUZZING_PATTERNS = [
-	"oss-fuzz",
-	"clusterfuzzlite",
-	"fuzz",
-	"fuzzing",
-	"libfuzzer",
-	"afl",
-	"honggfuzz",
-	"go-fuzz",
-	"jazzer",
-	"atheris",
-	"cargo-fuzz",
+const WORKFLOW_PATTERNS: { name: string; pattern: RegExp }[] = [
+	{ name: "OSSFuzz", pattern: /oss-fuzz/i },
+	{ name: "ClusterFuzzLite", pattern: /clusterfuzzlite/i },
+	{ name: "Go built-in fuzzer", pattern: /func\s+Fuzz\w+\s*\(/ },
+	{ name: "Python atheris", pattern: /import\s+atheris/i },
+	{ name: "Rust libFuzzer", pattern: /libfuzzer_sys/i },
+	{ name: "C/C++ libFuzzer", pattern: /LLVMFuzzerTestOneInput/i },
+	{ name: "Java Jazzer", pattern: /com\.code_intelligence\.jazzer/i },
 ];
 
 export const fuzzing = (data: RepoData): CheckResult => {
 	const details: string[] = [];
 
-	for (const wf of data.workflowFiles) {
-		const lower = wf.content.toLowerCase();
-		for (const pattern of FUZZING_PATTERNS) {
-			if (lower.includes(pattern)) {
-				details.push(`Fuzzing pattern "${pattern}" found in ${wf.path}`);
-			}
-		}
+	// Check OSSFuzz external registry
+	if (data.ossFuzzRegistered) {
+		details.push("Project is registered in OSSFuzz");
 	}
 
-	if (data.treeFiles.some((f) => f.toLowerCase().includes("fuzz"))) {
-		details.push("Fuzz-related files found in repository");
+	// Check for .clusterfuzzlite/ directory in tree
+	if (data.treeFiles.some((f) => f.startsWith(".clusterfuzzlite/"))) {
+		details.push("ClusterFuzzLite configuration found in repository");
+	}
+
+	// Check workflow files for specific fuzzer integrations
+	for (const wf of data.workflowFiles) {
+		for (const { name, pattern } of WORKFLOW_PATTERNS) {
+			if (pattern.test(wf.content)) {
+				details.push(`${name} detected in ${wf.path}`);
+			}
+		}
 	}
 
 	if (details.length > 0) {

@@ -2,7 +2,7 @@ import type { CheckResult, RepoData } from "../types";
 
 export const branchProtection = (data: RepoData): CheckResult => {
 	if (data.branchProtectionRules.length === 0) {
-		return { score: 0, reason: "No branch protection rules found" };
+		return { score: -1, reason: "Unable to detect branch protection rules" };
 	}
 
 	const rule = data.branchProtectionRules[0];

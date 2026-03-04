@@ -8,11 +8,17 @@ export const signedReleases = (data: RepoData): CheckResult => {
 		return { score: -1, reason: "No releases found" };
 	}
 
+	// OSSF: if all releases have zero assets, return -1 (inconclusive)
+	const releasesWithAssets = data.releases.filter((r) => r.assets.length > 0);
+	if (releasesWithAssets.length === 0) {
+		return { score: -1, reason: "No release assets to evaluate" };
+	}
+
 	let signedCount = 0;
 	let hasSlsa = false;
 	const details: string[] = [];
 
-	for (const release of data.releases) {
+	for (const release of releasesWithAssets) {
 		const hasSignature = release.assets.some((a) =>
 			SIGNATURE_PATTERNS.some((p) => a.name.toLowerCase().includes(p)),
 		);
@@ -32,14 +38,14 @@ export const signedReleases = (data: RepoData): CheckResult => {
 		return { score: 10, reason: "SLSA provenance detected", details };
 	}
 
-	if (signedCount === data.releases.length) {
+	if (signedCount === releasesWithAssets.length) {
 		return { score: 8, reason: "All releases are signed", details };
 	}
 
-	const score = Math.round((signedCount / data.releases.length) * 8);
+	const score = Math.round((signedCount / releasesWithAssets.length) * 8);
 	return {
 		score,
-		reason: `${signedCount}/${data.releases.length} releases signed`,
+		reason: `${signedCount}/${releasesWithAssets.length} releases signed`,
 		details,
 	};
 };

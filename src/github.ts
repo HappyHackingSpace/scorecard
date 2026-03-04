@@ -29,12 +29,9 @@ export const graphql = async <T>(
 
 	const json = (await response.json()) as { data?: T; errors?: { message: string }[] };
 
-	if (json.errors?.length) {
-		throw new Error(`GraphQL errors: ${json.errors.map((e) => e.message).join(", ")}`);
-	}
-
 	if (!json.data) {
-		throw new Error("GraphQL response missing data");
+		const errorMsg = json.errors?.map((e) => e.message).join(", ") ?? "unknown error";
+		throw new Error(`GraphQL request failed: ${errorMsg}`);
 	}
 
 	return json.data;

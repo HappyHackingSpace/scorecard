@@ -16,7 +16,6 @@ query RepoData($owner: String!, $repo: String!) {
       spdxId
     }
     isSecurityPolicyEnabled
-    hasVulnerabilityAlertsEnabled
     defaultBranchRef {
       name
       target {
@@ -36,8 +35,14 @@ query RepoData($owner: String!, $repo: String!) {
               associatedPullRequests(first: 1) {
                 nodes {
                   merged
+                  headRefOid
                   reviews(first: 10) {
                     totalCount
+                  }
+                  labels(first: 10) {
+                    nodes {
+                      name
+                    }
                   }
                 }
               }
@@ -47,18 +52,6 @@ query RepoData($owner: String!, $repo: String!) {
             }
           }
         }
-      }
-    }
-    branchProtectionRules(first: 5) {
-      nodes {
-        allowsForcePushes
-        allowsDeletions
-        requiresApprovingReviews
-        requiredApprovingReviewCount
-        requiresStatusChecks
-        requiresCodeOwnerReviews
-        dismissesStaleReviews
-        isAdminEnforced
       }
     }
     releases(first: 5, orderBy: { field: CREATED_AT, direction: DESC }) {

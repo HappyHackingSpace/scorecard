@@ -3,34 +3,42 @@ import { vulnerabilities } from "../../src/checks/vulnerabilities";
 import { makeRepoData } from "../helpers";
 
 describe("vulnerabilities", () => {
-	it("returns -1 when alerts not enabled", () => {
-		const result = vulnerabilities(makeRepoData({ hasVulnerabilityAlertsEnabled: false }));
-		expect(result.score).toBe(-1);
-	});
-
-	it("returns 10 when no open alerts", () => {
+	it("returns 10 when no OSV vulnerabilities found", () => {
 		const result = vulnerabilities(makeRepoData());
 		expect(result.score).toBe(10);
 	});
 
-	it("deducts by severity", () => {
+	it("deducts per OSV vulnerability (OSSF scoring)", () => {
 		const result = vulnerabilities(
 			makeRepoData({
-				vulnerabilityAlerts: [
-					{ severity: "critical", state: "open" },
-					{ severity: "high", state: "open" },
+				osvVulnerabilities: [
+					{ id: "GHSA-1", severity: "critical" },
+					{ id: "GHSA-2", severity: "high" },
 				],
 			}),
 		);
-		expect(result.score).toBe(3);
+		expect(result.score).toBe(8);
 	});
 
-	it("ignores dismissed alerts", () => {
+	it("minimum score is 0", () => {
 		const result = vulnerabilities(
 			makeRepoData({
-				vulnerabilityAlerts: [{ severity: "critical", state: "dismissed" }],
+				osvVulnerabilities: Array.from({ length: 15 }, (_, i) => ({
+					id: `GHSA-${i}`,
+					severity: "high",
+				})),
 			}),
 		);
-		expect(result.score).toBe(10);
+		expect(result.score).toBe(0);
+	});
+
+	it("falls back to Dependabot alerts when no OSV data but alerts enabled", () => {
+		const result = vulnerabilities(
+			makeRepoData({
+				hasVulnerabilityAlertsEnabled: true,
+				vulnerabilityAlerts: [{ severity: "critical", state: "open" }],
+			}),
+		);
+		expect(result.score).toBe(9);
 	});
 });

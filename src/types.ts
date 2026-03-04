@@ -54,7 +54,9 @@ export interface CommitInfo {
 	};
 	associatedPullRequest: {
 		merged: boolean;
+		headSHA: string;
 		reviews: number;
+		labels: string[];
 	} | null;
 	statusCheckRollup: string | null;
 }
@@ -101,6 +103,25 @@ export interface RepoData {
 	webhooks: WebhookInfo[];
 	issueActivityCount: number;
 	spdxId: string | null;
+	ossFuzzRegistered: boolean;
+	successfulWorkflowPaths: string[];
+	dockerfiles: { path: string; content: string }[];
+	contributors: ContributorInfo[];
+	osvVulnerabilities: OsvVulnerability[];
+	mergedPRCIResults: { sha: string; hasCIChecks: boolean }[];
+	mergedPRSASTResults: { sha: string; hasSASTCheck: boolean }[];
+}
+
+export interface ContributorInfo {
+	login: string;
+	contributions: number;
+	organizations: string[];
+	company: string | null;
+}
+
+export interface OsvVulnerability {
+	id: string;
+	severity: string;
 }
 
 export interface VulnerabilityAlert {

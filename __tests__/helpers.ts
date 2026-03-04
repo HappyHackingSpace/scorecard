@@ -26,5 +26,12 @@ export const makeRepoData = (overrides: Partial<RepoData> = {}): RepoData => ({
 	webhooks: [],
 	issueActivityCount: 0,
 	spdxId: null,
+	ossFuzzRegistered: false,
+	successfulWorkflowPaths: [],
+	dockerfiles: [],
+	contributors: [],
+	osvVulnerabilities: [],
+	mergedPRCIResults: [],
+	mergedPRSASTResults: [],
 	...overrides,
 });
