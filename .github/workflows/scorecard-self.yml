@@ -1,0 +1,27 @@
+---
+name: Scorecard (self)
+
+"on":
+  workflow_dispatch:
+  schedule:
+    - cron: "41 8 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  scorecard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Score this repository
+        id: scorecard
+        uses: ./action
+        with:
+          repo: ${{ github.repository }}
+
+      - name: Print score
+        env:
+          SCORE: ${{ steps.scorecard.outputs.score }}
+        run: 'echo "Aggregate score: ${SCORE}/10"'

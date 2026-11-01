@@ -81,6 +81,47 @@ npx @happyhackingspace/scorecard <owner>/<repo> [--token <token>] [--checks Main
 
 The token falls back to the `GITHUB_TOKEN` (then `GH_TOKEN`) environment variable. Default output is an aligned table; `--json` prints the raw `ScorecardResult`. Exit codes: `0` success, `1` API/check failure, `2` usage error.
 
+## GitHub Action
+
+A composite action wraps the scorecard so any workflow can score a repository with a plain `GITHUB_TOKEN` — including private repos the token can read:
+
+```yaml
+permissions:
+  contents: read
+  pull-requests: write # only needed for comment-pr
+
+jobs:
+  scorecard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: HappyHackingSpace/scorecard/action@main
+        id: scorecard
+        with:
+          repo: ${{ github.repository }} # default
+          comment-pr: "true"
+          fail-below: "5"
+      - run: echo "${{ steps.scorecard.outputs.score }}"
+```
+
+### Inputs
+
+| Input | Default | Description |
+|-------|---------|-------------|
+| `repo` | `${{ github.repository }}` | Repository to score (`owner/repo`) |
+| `token` | `${{ github.token }}` | Token for GitHub API calls and the PR comment |
+| `checks` | all 20 | Comma-separated list of checks to run |
+| `comment-pr` | `"false"` | Post/update the score table as a PR comment (`pull_request` events) |
+| `fail-below` | — | Fail the step when the aggregate score is below this threshold (0–10) |
+
+### Outputs
+
+| Output | Description |
+|--------|-------------|
+| `score` | Aggregate score (0–10) |
+| `json` | Full `ScorecardResult` as single-line JSON |
+
+The action always writes the per-check table to the job summary (`$GITHUB_STEP_SUMMARY`). With `comment-pr: "true"` it creates one marker-tagged comment per PR and updates it on subsequent runs. This repo scores itself weekly in [`scorecard-self.yml`](.github/workflows/scorecard-self.yml).
+
 ## Checks
 
 | Check | Risk | Weight | Description |

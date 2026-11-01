@@ -1,0 +1,64 @@
+---
+name: "OSSF Scorecard (TypeScript)"
+description: >-
+  Compute OSSF Scorecard checks for a GitHub repository, write a job
+  summary table, expose score/json outputs, optionally comment on the
+  pull request, and optionally fail below a score threshold.
+author: "Happy Hacking Space"
+
+branding:
+  icon: "shield"
+  color: "purple"
+
+inputs:
+  repo:
+    description: "Repository to score, as <owner>/<repo>."
+    required: false
+    default: ${{ github.repository }}
+  token:
+    description: >-
+      GitHub token used for API calls and the optional PR comment.
+    required: false
+    default: ${{ github.token }}
+  checks:
+    description: >-
+      Comma-separated list of checks to run (default: all 20).
+    required: false
+    default: ""
+  comment-pr:
+    description: >-
+      Post (or update) the score table as a PR comment. Only applies to
+      pull_request events; requires `pull-requests: write` permission.
+    required: false
+    default: "false"
+  fail-below:
+    description: >-
+      Fail the step when the aggregate score is below this threshold
+      (0-10). Empty disables the gate.
+    required: false
+    default: ""
+
+outputs:
+  score:
+    description: "Aggregate score (0-10)."
+    value: ${{ steps.scorecard.outputs.score }}
+  json:
+    description: "Full scorecard result as single-line JSON."
+    value: ${{ steps.scorecard.outputs.json }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+
+    - name: Run scorecard
+      id: scorecard
+      shell: bash
+      env:
+        SCORECARD_REPO: ${{ inputs.repo }}
+        SCORECARD_TOKEN: ${{ inputs.token }}
+        SCORECARD_CHECKS: ${{ inputs.checks }}
+        SCORECARD_COMMENT_PR: ${{ inputs.comment-pr }}
+        SCORECARD_FAIL_BELOW: ${{ inputs.fail-below }}
+      run: bun "${GITHUB_ACTION_PATH}/run.ts"
