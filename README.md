@@ -73,6 +73,14 @@ interface ScorecardCheck {
 }
 ```
 
+## CLI
+
+```bash
+npx @happyhackingspace/scorecard <owner>/<repo> [--token <token>] [--checks Maintained,License] [--json]
+```
+
+The token falls back to the `GITHUB_TOKEN` (then `GH_TOKEN`) environment variable. Default output is an aligned table; `--json` prints the raw `ScorecardResult`. Exit codes: `0` success, `1` API/check failure, `2` usage error.
+
 ## Checks
 
 | Check | Risk | Weight | Description |
