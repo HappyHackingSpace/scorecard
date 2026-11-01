@@ -4,7 +4,9 @@ const BOT_SUFFIXES = ["[bot]", "-bot", "_bot"];
 
 const isBot = (login: string): boolean => {
 	const lower = login.toLowerCase();
-	return BOT_SUFFIXES.some((s) => lower.endsWith(s)) || lower === "dependabot" || lower === "renovate";
+	return (
+		BOT_SUFFIXES.some((s) => lower.endsWith(s)) || lower === "dependabot" || lower === "renovate"
+	);
 };
 
 // OSSF detects review platforms from commit messages and PR labels
@@ -13,17 +15,16 @@ const PHABRICATOR_PATTERN = /Differential Revision:\s*.*D\d+/;
 const PIPER_PATTERN = /PiperOrigin-RevId:\s*\d+/;
 const PROW_LABELS = ["lgtm", "approved"];
 
-const isExternallyReviewed = (
-	message: string,
-	labels: string[],
-): boolean => {
+const isExternallyReviewed = (message: string, labels: string[]): boolean => {
 	// Prow: PR has lgtm and approved labels
 	const lowerLabels = labels.map((l) => l.toLowerCase());
 	if (PROW_LABELS.every((pl) => lowerLabels.includes(pl))) {
 		return true;
 	}
 	// Gerrit, Phabricator, Piper: detected from commit message
-	return GERRIT_PATTERN.test(message) || PHABRICATOR_PATTERN.test(message) || PIPER_PATTERN.test(message);
+	return (
+		GERRIT_PATTERN.test(message) || PHABRICATOR_PATTERN.test(message) || PIPER_PATTERN.test(message)
+	);
 };
 
 export const codeReview = (data: RepoData): CheckResult => {
@@ -39,10 +40,7 @@ export const codeReview = (data: RepoData): CheckResult => {
 		const botAuthored = isBot(commit.author.login ?? "");
 		const pr = commit.associatedPullRequest;
 		const hasGitHubReview = pr != null && pr.merged && pr.reviews >= 1;
-		const hasExternalReview = isExternallyReviewed(
-			commit.message,
-			pr?.labels ?? [],
-		);
+		const hasExternalReview = isExternallyReviewed(commit.message, pr?.labels ?? []);
 		const isApproved = hasGitHubReview || hasExternalReview;
 
 		// OSSF logic: skip approved bot changesets entirely,
@@ -71,10 +69,7 @@ export const codeReview = (data: RepoData): CheckResult => {
 
 	return {
 		score,
-		reason:
-			score >= 7
-				? "Most changes are reviewed"
-				: `${approved}/${total} changesets approved`,
+		reason: score >= 7 ? "Most changes are reviewed" : `${approved}/${total} changesets approved`,
 		details: details.slice(0, 10),
 	};
 };

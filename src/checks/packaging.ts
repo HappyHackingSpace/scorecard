@@ -60,7 +60,11 @@ export const packaging = (data: RepoData): CheckResult => {
 	);
 
 	if (!hasSuccessfulRun) {
-		return { score: -1, reason: "Publishing workflow found but no successful runs detected", details };
+		return {
+			score: -1,
+			reason: "Publishing workflow found but no successful runs detected",
+			details,
+		};
 	}
 
 	return { score: 10, reason: "Publishing workflow detected with successful runs", details };
