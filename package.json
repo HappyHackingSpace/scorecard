@@ -3,6 +3,9 @@
 	"version": "0.2.0",
 	"description": "Reference implementation of OSSF Scorecard in TypeScript",
 	"type": "module",
+	"bin": {
+		"scorecard": "./dist/cli-run.js"
+	},
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -29,6 +32,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.5",
+		"@types/node": "^26.6.6",
 		"tsup": "^8.3.5",
 		"typescript": "^5.7.2",
 		"vitest": "^4.0.18"
