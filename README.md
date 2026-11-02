@@ -118,6 +118,10 @@ bun run lint
 bun run typecheck
 ```
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=HappyHackingSpace/scorecard&type=Date)](https://star-history.com/#HappyHackingSpace/scorecard&Date)
+
 ## License
 
 MIT
