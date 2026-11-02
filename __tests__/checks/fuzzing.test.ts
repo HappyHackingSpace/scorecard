@@ -42,7 +42,9 @@ describe("fuzzing", () => {
 	});
 
 	it("returns 0 for generic fuzz substring in tree files", () => {
-		const result = fuzzing(makeRepoData({ treeFiles: ["pkg/fuzz/helpers.go", "tests/fuzz_test.go"] }));
+		const result = fuzzing(
+			makeRepoData({ treeFiles: ["pkg/fuzz/helpers.go", "tests/fuzz_test.go"] }),
+		);
 		expect(result.score).toBe(0);
 	});
 

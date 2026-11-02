@@ -28,10 +28,7 @@ describe("pinnedDependencies", () => {
 				workflowFiles: [
 					{
 						path: ".github/workflows/ci.yml",
-						content: [
-							"uses: actions/checkout@v4",
-							"uses: actions/setup-node@v4",
-						].join("\n"),
+						content: ["uses: actions/checkout@v4", "uses: actions/setup-node@v4"].join("\n"),
 					},
 				],
 			}),
@@ -236,8 +233,7 @@ describe("pinnedDependencies", () => {
 				workflowFiles: [
 					{
 						path: ".github/workflows/ci.yml",
-						content:
-							"uses: actions/checkout@A5AC7E51B41094C92402DA3B24376905380AFC29A5AC7E51",
+						content: "uses: actions/checkout@A5AC7E51B41094C92402DA3B24376905380AFC29A5AC7E51",
 					},
 				],
 			}),

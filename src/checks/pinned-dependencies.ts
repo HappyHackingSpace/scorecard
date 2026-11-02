@@ -25,16 +25,14 @@ const FETCH_PIPE_EXEC_RE =
 const PROC_SUB_RE = /(?:bash|sh)\s+<\((?:curl|wget|gsutil)\s/g;
 
 // OSSF: URL is only "pinned" if it's raw.githubusercontent.com with a 40-char SHA in path
-const PINNED_URL_RE =
-	/raw\.githubusercontent\.com\/[^/]+\/[^/]+\/[a-fA-F0-9]{40}\//;
+const PINNED_URL_RE = /raw\.githubusercontent\.com\/[^/]+\/[^/]+\/[a-fA-F0-9]{40}\//;
 
 // Package manager patterns in workflow run: blocks
 // npm: npm install/i/ci/update - pinned only if npm ci
 const NPM_INSTALL_RE = /\bnpm\s+(?:install|i|update|install-test)\b/g;
 const NPM_CI_RE = /\bnpm\s+ci\b/;
 // pip: pip/pip3 install - pinned if --require-hashes
-const PIP_INSTALL_RE =
-	/\b(?:pip3?|python3?\s+-m\s+pip)\s+install\b/g;
+const PIP_INSTALL_RE = /\b(?:pip3?|python3?\s+-m\s+pip)\s+install\b/g;
 const PIP_HASHES_RE = /--require-hashes/;
 // go: go install/get - pinned if has @vX.Y.Z or @sha
 const GO_INSTALL_RE = /\bgo\s+(?:install|get)\s+\S+/g;
@@ -139,8 +137,7 @@ export const pinnedDependencies = (data: RepoData): CheckResult => {
 	// Pass 1: Detect which GH Action types exist (for weight assignment)
 	for (const wf of data.workflowFiles) {
 		const re = /uses:\s*(['"]?)([^\s'"]+)\1/g;
-		let m: RegExpExecArray | null;
-		while ((m = re.exec(wf.content)) !== null) {
+		for (const m of wf.content.matchAll(re)) {
 			const action = m[2];
 			if (LOCAL_ACTION_RE.test(action)) continue;
 			if (isGitHubOwned(action)) hasGitHubOwned = true;
@@ -155,8 +152,7 @@ export const pinnedDependencies = (data: RepoData): CheckResult => {
 	// Pass 2: Check GitHub Actions pinning
 	for (const wf of data.workflowFiles) {
 		const re = /uses:\s*(['"]?)([^\s'"]+)\1/g;
-		let m: RegExpExecArray | null;
-		while ((m = re.exec(wf.content)) !== null) {
+		for (const m of wf.content.matchAll(re)) {
 			const action = m[2];
 			if (LOCAL_ACTION_RE.test(action)) continue; // local always pinned, not counted
 
@@ -261,9 +257,8 @@ export const pinnedDependencies = (data: RepoData): CheckResult => {
 
 		const fromRe = new RegExp(DOCKER_FROM_RE.source, "gm");
 		const pinnedAliases = new Set<string>();
-		let m: RegExpExecArray | null;
 
-		while ((m = fromRe.exec(df.content)) !== null) {
+		for (const m of df.content.matchAll(fromRe)) {
 			const image = m[1];
 			if (image === "scratch") continue;
 			if (image.startsWith("$")) continue;

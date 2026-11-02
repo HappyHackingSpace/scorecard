@@ -59,9 +59,7 @@ describe("sast", () => {
 						content: "uses: github/codeql-action/analyze@v3",
 					},
 				],
-				mergedPRSASTResults: [
-					{ sha: "abc123", hasSASTCheck: true },
-				],
+				mergedPRSASTResults: [{ sha: "abc123", hasSASTCheck: true }],
 			}),
 		);
 		expect(result.score).toBe(10);
