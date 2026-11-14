@@ -108,11 +108,7 @@ const fetchWorkflowFiles = async (
 	if (!dirListing || !Array.isArray(dirListing)) return [];
 
 	const workflowPaths = dirListing
-		.filter(
-			(f) =>
-				f.type === "file" &&
-				(f.name.endsWith(".yml") || f.name.endsWith(".yaml")),
-		)
+		.filter((f) => f.type === "file" && (f.name.endsWith(".yml") || f.name.endsWith(".yaml")))
 		.map((f) => f.path);
 
 	const files = await Promise.allSettled(
@@ -237,7 +233,9 @@ const queryOsv = async (
 				body: JSON.stringify({ queries: chunk }),
 			});
 			if (!res.ok) continue;
-			const data = (await res.json()) as { results: { vulns?: { id: string; severity?: { type: string; score: string }[] }[] }[] };
+			const data = (await res.json()) as {
+				results: { vulns?: { id: string; severity?: { type: string; score: string }[] }[] }[];
+			};
 			for (const result of data.results) {
 				for (const vuln of result.vulns ?? []) {
 					const severity = vuln.severity?.[0]?.score
@@ -317,13 +315,11 @@ const assembleRepoData = async (
 			`/repos/${owner}/${repo}/hooks`,
 		),
 		r.isSecurityPolicyEnabled
-			? restGetRaw(client, `/repos/${owner}/${repo}/contents/SECURITY.md`).then(
-					async (content) => {
-						if (content) return content;
-						// Fallback: check org-level .github repo
-						return restGetRaw(client, `/repos/${owner}/.github/contents/SECURITY.md`);
-					},
-				)
+			? restGetRaw(client, `/repos/${owner}/${repo}/contents/SECURITY.md`).then(async (content) => {
+					if (content) return content;
+					// Fallback: check org-level .github repo
+					return restGetRaw(client, `/repos/${owner}/.github/contents/SECURITY.md`);
+				})
 			: Promise.resolve(null),
 		restGet<{
 			allow_force_pushes: { enabled: boolean };
@@ -412,7 +408,9 @@ const assembleRepoData = async (
 	);
 	const contributorData = contributorDetails
 		.filter(
-			(r): r is PromiseFulfilledResult<{
+			(
+				r,
+			): r is PromiseFulfilledResult<{
 				login: string;
 				contributions: number;
 				organizations: string[];
@@ -423,18 +421,32 @@ const assembleRepoData = async (
 
 	// Fetch check runs for merged PRs (OSSF uses ListCheckRunsForRef per PR head SHA)
 	const CI_PATTERNS = [
-		"appveyor", "buildkite", "circleci", "e2e", "github-actions",
-		"jenkins", "test", "travis-ci", "cirrus-ci", "azure-pipelines",
-		"ci/woodpecker", "codebuild",
+		"appveyor",
+		"buildkite",
+		"circleci",
+		"e2e",
+		"github-actions",
+		"jenkins",
+		"test",
+		"travis-ci",
+		"cirrus-ci",
+		"azure-pipelines",
+		"ci/woodpecker",
+		"codebuild",
 	];
 	// OSSF SAST app slugs from checks/raw/sast.go
 	const SAST_APP_SLUGS = [
-		"github-advanced-security", "github-code-scanning",
-		"lgtm-com", "sonarcloud", "sonarqubecloud",
+		"github-advanced-security",
+		"github-code-scanning",
+		"lgtm-com",
+		"sonarcloud",
+		"sonarqubecloud",
 	];
 	const SAST_ALLOWED_CONCLUSIONS = ["success", "neutral"];
 	const mergedPRSHAs = commitNodes
-		.filter((c) => c.associatedPullRequests.nodes.length > 0 && c.associatedPullRequests.nodes[0].merged)
+		.filter(
+			(c) => c.associatedPullRequests.nodes.length > 0 && c.associatedPullRequests.nodes[0].merged,
+		)
 		.map((c) => c.associatedPullRequests.nodes[0].headRefOid)
 		.filter((sha): sha is string => !!sha);
 
@@ -442,32 +454,43 @@ const assembleRepoData = async (
 	const checkRunResults = await Promise.allSettled(
 		uniqueSHAs.map(async (sha) => {
 			const [checkRuns, statuses] = await Promise.allSettled([
-				restGet<{ check_runs: { name: string; status: string; conclusion: string | null; app: { slug: string } | null }[] }>(
-					client,
-					`/repos/${owner}/${repo}/commits/${sha}/check-runs?per_page=100`,
-				),
+				restGet<{
+					check_runs: {
+						name: string;
+						status: string;
+						conclusion: string | null;
+						app: { slug: string } | null;
+					}[];
+				}>(client, `/repos/${owner}/${repo}/commits/${sha}/check-runs?per_page=100`),
 				restGet<{ state: string; context: string }[]>(
 					client,
 					`/repos/${owner}/${repo}/commits/${sha}/statuses?per_page=100`,
 				),
 			]);
-			const runs = checkRuns.status === "fulfilled" ? checkRuns.value?.check_runs ?? [] : [];
-			const stats = statuses.status === "fulfilled" ? statuses.value ?? [] : [];
+			const runs = checkRuns.status === "fulfilled" ? (checkRuns.value?.check_runs ?? []) : [];
+			const stats = statuses.status === "fulfilled" ? (statuses.value ?? []) : [];
 
-			const hasCI = runs.some((r) =>
-				r.status === "completed" &&
-				(r.conclusion === "success" || r.conclusion === "neutral") &&
-				CI_PATTERNS.some((p) => r.name.toLowerCase().includes(p) || (r.app?.slug ?? "").toLowerCase().includes(p)),
-			) || stats.some((s) =>
-				s.state === "success" &&
-				CI_PATTERNS.some((p) => s.context.toLowerCase().includes(p)),
-			);
+			const hasCI =
+				runs.some(
+					(r) =>
+						r.status === "completed" &&
+						(r.conclusion === "success" || r.conclusion === "neutral") &&
+						CI_PATTERNS.some(
+							(p) =>
+								r.name.toLowerCase().includes(p) || (r.app?.slug ?? "").toLowerCase().includes(p),
+						),
+				) ||
+				stats.some(
+					(s) =>
+						s.state === "success" && CI_PATTERNS.some((p) => s.context.toLowerCase().includes(p)),
+				);
 
 			// OSSF SAST detection: check suites by app slug with completed status + success/neutral conclusion
-			const hasSAST = runs.some((r) =>
-				r.status === "completed" &&
-				SAST_ALLOWED_CONCLUSIONS.includes(r.conclusion ?? "") &&
-				SAST_APP_SLUGS.includes((r.app?.slug ?? "").toLowerCase()),
+			const hasSAST = runs.some(
+				(r) =>
+					r.status === "completed" &&
+					SAST_ALLOWED_CONCLUSIONS.includes(r.conclusion ?? "") &&
+					SAST_APP_SLUGS.includes((r.app?.slug ?? "").toLowerCase()),
 			);
 
 			return { sha, hasCIChecks: hasCI, hasSASTCheck: hasSAST };
@@ -477,7 +500,10 @@ const assembleRepoData = async (
 	const checkResultMap = new Map<string, { hasCIChecks: boolean; hasSASTCheck: boolean }>();
 	for (const r of checkRunResults) {
 		if (r.status === "fulfilled") {
-			checkResultMap.set(r.value.sha, { hasCIChecks: r.value.hasCIChecks, hasSASTCheck: r.value.hasSASTCheck });
+			checkResultMap.set(r.value.sha, {
+				hasCIChecks: r.value.hasCIChecks,
+				hasSASTCheck: r.value.hasSASTCheck,
+			});
 		}
 	}
 	// OSSF counts per-commit (not per-unique-SHA) — expand back to all merged PR SHAs
@@ -543,8 +569,7 @@ const assembleRepoData = async (
 					requiresStatusChecks: bp.required_status_checks !== null,
 					requiresCodeOwnerReviews:
 						bp.required_pull_request_reviews?.require_code_owner_reviews ?? false,
-					dismissesStaleReviews:
-						bp.required_pull_request_reviews?.dismiss_stale_reviews ?? false,
+					dismissesStaleReviews: bp.required_pull_request_reviews?.dismiss_stale_reviews ?? false,
 					isAdminEnforced: bp.enforce_admins?.enabled ?? false,
 				},
 			];
@@ -562,9 +587,7 @@ const assembleRepoData = async (
 							merged: c.associatedPullRequests.nodes[0].merged,
 							headSHA: c.associatedPullRequests.nodes[0].headRefOid,
 							reviews: c.associatedPullRequests.nodes[0].reviews.totalCount,
-							labels: (c.associatedPullRequests.nodes[0].labels?.nodes ?? []).map(
-								(l) => l.name,
-							),
+							labels: (c.associatedPullRequests.nodes[0].labels?.nodes ?? []).map((l) => l.name),
 						}
 					: null,
 			statusCheckRollup: c.statusCheckRollup?.state ?? null,
@@ -663,4 +686,4 @@ export const computeScorecard = async (
 	};
 };
 
-export { CHECK_REGISTRY, runChecks, computeAggregate };
+export { CHECK_REGISTRY, computeAggregate, runChecks };

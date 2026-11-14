@@ -31,9 +31,10 @@ export const vulnerabilities = (data: RepoData): CheckResult => {
 
 	return {
 		score,
-		reason: vulns.length === 0
-			? "No known vulnerabilities found"
-			: `${vulns.length} known vulnerability(ies) via OSV`,
+		reason:
+			vulns.length === 0
+				? "No known vulnerabilities found"
+				: `${vulns.length} known vulnerability(ies) via OSV`,
 		details,
 	};
 };
